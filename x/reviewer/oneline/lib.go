@@ -2,9 +2,11 @@ package oneline
 
 import (
 	"fmt"
+	"os"
 	"strconv"
 	"strings"
 
+	tea "github.com/charmbracelet/bubbletea"
 	"github.com/pluveto/ankiterm/x/automata"
 	"github.com/pluveto/ankiterm/x/xmisc"
 	"github.com/pluveto/ankiterm/x/xslices"
@@ -65,34 +67,11 @@ func Execute(am *automata.Automata, deck string) {
 			}
 			panic(err)
 		}
-		if err != nil {
-			fmt.Println("No more cards.")
-			return
-		}
 
-		fmt.Printf("\n[REVIEW MODE]\n")
-		fmt.Println(format(card.Question))
-		fmt.Println("\n[ENTER] Show Answer")
-
-		awaitEnter()
-		fmt.Print("\n---\n")
-		fmt.Println(format(card.Answer))
-
-		lookup := []string{"Again", "Hard", "Good", "Easy"}
-		for i, button := range card.Buttons {
-			fmt.Printf("[%d] %s (%s)\n", button, lookup[i], card.NextReviews[i])
-		}
-
-		action := awaitAction(am.CurrentCard().Buttons)
-		switch code := action.getCode(); code {
-		case ActionAbort:
-			return
-		case ActionSkip:
-			continue
-		case ActionAnswer:
-			am.AnswerCard(action.(AnswerAction).CardEase)
-		default:
-			panic("unknown action code")
+		p := tea.NewProgram(initialModel(card))
+		if _, err := p.Run(); err != nil {
+			fmt.Printf("Alas, there's been an error: %v", err)
+			os.Exit(1)
 		}
 	}
 }

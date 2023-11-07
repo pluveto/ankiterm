@@ -4,6 +4,7 @@ import (
 	"github.com/alexflint/go-arg"
 	"github.com/pluveto/ankiterm/x/ankicc"
 	"github.com/pluveto/ankiterm/x/automata"
+	"github.com/pluveto/ankiterm/x/reviewer/oneline"
 	"github.com/pluveto/ankiterm/x/reviewer/streamrv"
 )
 
@@ -18,5 +19,9 @@ func main() {
 	arg.MustParse(&args)
 
 	am := automata.NewAutomata(ankicc.Client{BaseURL: args.BaseURL})
+	if args.Reviewer == "oneline" {
+		oneline.Execute(am, args.Deck)
+		return
+	}
 	streamrv.Execute(am, args.Deck)
 }
