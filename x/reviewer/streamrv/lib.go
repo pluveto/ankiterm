@@ -6,41 +6,10 @@ import (
 	"strings"
 
 	"github.com/pluveto/ankiterm/x/automata"
+	"github.com/pluveto/ankiterm/x/reviewer"
 	"github.com/pluveto/ankiterm/x/xmisc"
 	"github.com/pluveto/ankiterm/x/xslices"
 )
-
-const (
-	ActionAnswer = "answer"
-	ActionSkip   = "skip"
-	ActionAbort  = "abort"
-)
-
-type Action interface {
-	getCode() string
-}
-
-type AnswerAction struct {
-	CardEase int
-}
-
-func (a AnswerAction) getCode() string {
-	return ActionAnswer
-}
-
-type SkipAction struct {
-}
-
-func (a SkipAction) getCode() string {
-	return ActionSkip
-}
-
-type AbortAction struct {
-}
-
-func (a AbortAction) getCode() string {
-	return ActionAbort
-}
 
 func Execute(am *automata.Automata, deck string) {
 	if am == nil {
@@ -84,13 +53,13 @@ func Execute(am *automata.Automata, deck string) {
 		}
 
 		action := awaitAction(am.CurrentCard().Buttons)
-		switch code := action.getCode(); code {
-		case ActionAbort:
+		switch code := action.GetCode(); code {
+		case reviewer.ActionAbort:
 			return
-		case ActionSkip:
+		case reviewer.ActionSkip:
 			continue
-		case ActionAnswer:
-			am.AnswerCard(action.(AnswerAction).CardEase)
+		case reviewer.ActionAnswer:
+			am.AnswerCard(action.(reviewer.AnswerAction).CardEase)
 		default:
 			panic("unknown action code")
 		}
@@ -101,30 +70,19 @@ func awaitEnter() {
 	fmt.Scanln()
 }
 
-func awaitAction(validRange []int) Action {
+func awaitAction(validRange []int) reviewer.Action {
 	print("awaitAction")
 	var input string
 	fmt.Scanln(&input)
 	// try parse int
 	i, err := strconv.Atoi(input)
 	if err == nil {
-		if xslices.Contains(validRange, i) {
-			return AnswerAction{CardEase: i}
-		} else {
+		if !xslices.Contains(validRange, i) {
 			fmt.Printf("invalid input \"%s\" out of range, try again: \n", input)
 			return awaitAction(validRange)
 		}
 	}
-
-	switch input {
-	case "s":
-		return SkipAction{}
-	case "a":
-		return AbortAction{}
-	default:
-		fmt.Printf("invalid input \"%s\", try again: \n", input)
-		return awaitAction(validRange)
-	}
+	return reviewer.ActionFromString(input)
 }
 
 func format(text string) string {
