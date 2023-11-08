@@ -9,7 +9,7 @@ on:
       prerelease:
         type: boolean
         required: false
-        default: yes
+        default: true
         
 jobs:
   build:
@@ -31,24 +31,12 @@ jobs:
       - name: Go Test
         run: |
           make test
-          
-      - name: Cross Build
+
+      - name: Test Build
         # You may pin to the exact commit or the version.
         run: |
-          make package
-
-      - name: Setup node
-        uses: actions/setup-node@v3
-        with:
-          node-version: 18
-
-      - name: Build UI
-        run: |
-          cd ui
-          yarn install
-          yarn build
-          zip -r flydav-ui-dist.zip dist
-          cp flydav-ui-dist.zip ../dist
+          make dev
+          make clean
 
       - name: Create Tag
         uses: negz/create-tag@v1
@@ -56,6 +44,11 @@ jobs:
           version: ${{ github.event.inputs.tag }}
           message: "create tag"
           token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Cross Build
+        # You may pin to the exact commit or the version.
+        run: |
+          make package
 
       - name: Create changelog text
         id: changelog
