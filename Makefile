@@ -4,7 +4,8 @@ APP=ankiterm
 GOARCHS=amd64 386 arm arm64
 GOARCHS_MAC=amd64 arm64
 INSTALL_DIR=/usr/local/bin
-LD_FLAGS=-ldflags="-X 'main.Version=$(shell git describe --tags --long 2>/dev/null || echo unknown)'"
+VERSION ?= $(shell git describe --tags --long 2>/dev/null || echo unknown)
+LD_FLAGS=-ldflags="-X 'main.Version=$(VERSION)'"
 
 dev: linux
 
