@@ -67,20 +67,20 @@ func Execute(am *automata.Automata, deck string) {
 }
 
 func awaitEnter() {
-	fmt.Scanln()
+	var input string
+	fmt.Scanln(&input)
 }
 
 func awaitAction(validRange []int) reviewer.Action {
 	print("awaitAction")
 	var input string
 	fmt.Scanln(&input)
+
 	// try parse int
 	i, err := strconv.Atoi(input)
-	if err == nil {
-		if !xslices.Contains(validRange, i) {
-			fmt.Printf("invalid input \"%s\" out of range, try again: \n", input)
-			return awaitAction(validRange)
-		}
+	if err != nil || !xslices.Contains(validRange, i) {
+		fmt.Printf("invalid input \"%s\" out of range, try again: \n", input)
+		return awaitAction(validRange)
 	}
 	return reviewer.ActionFromString(input)
 }
